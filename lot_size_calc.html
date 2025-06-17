@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kalkulator Lot Size</title>
+<!-- Bootstrap 5 CSS CDN -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  body {
+    background: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    max-width: 420px;
+    width: 100%;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.1);
+    background: white;
+  }
+  h2 {
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  #result {
+    margin-top: 20px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0d6efd;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card shadow-sm">
+  <h2>Kalkulator Lot Size</h2>
+
+  <div class="mb-3">
+    <label for="accountBalance" class="form-label">Veličina računa (USD):</label>
+    <input type="number" class="form-control" id="accountBalance" placeholder="npr. 10000" min="1" step="any" />
+  </div>
+
+  <div class="mb-3">
+    <label for="riskPercent" class="form-label">Risk (% od računa):</label>
+    <input type="number" class="form-control" id="riskPercent" placeholder="npr. 1" min="0.01" max="100" step="any" />
+  </div>
+
+  <div class="mb-3">
+    <label for="stopLossPoints" class="form-label">Stop Loss (u poenima):</label>
+    <input type="number" class="form-control" id="stopLossPoints" placeholder="npr. 11.6" min="0.01" step="any" />
+  </div>
+
+  <div class="mb-3">
+    <label for="instrument" class="form-label">Odaberi instrument:</label>
+    <select class="form-select" id="instrument" onchange="setValuePerPoint()">
+      <option value="">-- Odaberi --</option>
+      <option value="NQ">NQ (NDX100)</option>
+      <option value="SP500">SP500 (SPX500)</option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label for="valuePerPoint" class="form-label">Vrijednost 1 poena po lotu (USD):</label>
+    <input type="number" class="form-control" id="valuePerPoint" placeholder="npr. 10" min="0.0001" step="any" />
+  </div>
+
+  <button class="btn btn-primary w-100" onclick="calculateLotSize()">Izračunaj Lot Size</button>
+
+  <div id="result"></div>
+</div>
+
+<script>
+function setValuePerPoint() {
+  const instrument = document.getElementById('instrument').value;
+  const valueInput = document.getElementById('valuePerPoint');
+
+  if(instrument === 'NQ' || instrument === 'SP500') {
+    valueInput.value = 10;
+    valueInput.disabled = true;
+  } else {
+    valueInput.value = '';
+    valueInput.disabled = false;
+  }
+}
+
+function calculateLotSize() {
+  const balance = parseFloat(document.getElementById('accountBalance').value);
+  const riskPercent = parseFloat(document.getElementById('riskPercent').value);
+  const stopLoss = parseFloat(document.getElementById('stopLossPoints').value);
+  const valuePerPoint = parseFloat(document.getElementById('valuePerPoint').value);
+
+  if (isNaN(balance) || isNaN(riskPercent) || isNaN(stopLoss) || isNaN(valuePerPoint) ||
+      balance <= 0 || riskPercent <= 0 || stopLoss <= 0 || valuePerPoint <= 0) {
+    document.getElementById('result').innerText = 'Molim unesite sve vrijednosti ispravno i veće od nule.';
+    return;
+  }
+
+  const riskAmount = (riskPercent / 100) * balance;
+  const lotSize = riskAmount / (stopLoss * valuePerPoint);
+
+  document.getElementById('result').innerHTML =
+    `<strong>Preporučeni Lot Size:</strong> ${lotSize.toFixed(4)} lota`;
+}
+</script>
+
+</body>
+</html>
